@@ -2,14 +2,13 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Employee;
 import com.example.demo.service.DepartmentService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.demo.exception.EmployeeNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/departments")
@@ -21,23 +20,38 @@ public class DepartmentController {
         this.departmentService = departmentService;
     }
 
-    @GetMapping("/all")
-    public Map<Integer, List<Employee>> getAllEmployeesGroupedByDepartment() {
-        return departmentService.getAllEmployeesGroupedByDepartment();
-    }
-
-    @GetMapping("/employees-by-department")
-    public Set<Employee> getEmployeesByDepartment(@RequestParam int department) {
-        return departmentService.getEmployeesByDepartment(department);
-    }
-
     @GetMapping("/max-salary")
-    public Employee getEmployeeWithMaxSalary(@RequestParam int department) {
-        return departmentService.getEmployeeWithMaxSalary(department);
+    public ResponseEntity<Employee> getEmployeeWithMaxSalary(@RequestParam int departmentId) {
+        try {
+            Employee employee = departmentService.findEmployeeWithMaxSalary(departmentId);
+            return new ResponseEntity<>(employee, HttpStatus.OK);
+        } catch (EmployeeNotFoundException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/min-salary")
-    public Employee getEmployeeWithMinSalary(@RequestParam int department) {
-        return departmentService.getEmployeeWithMinSalary(department);
+    public ResponseEntity<Employee> getEmployeeWithMinSalary(@RequestParam int departmentId) {
+        try {
+            Employee employee = departmentService.findEmployeeWithMinSalary(departmentId);
+            return new ResponseEntity<>(employee, HttpStatus.OK);
+        } catch (EmployeeNotFoundException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Employee>> getAllEmployeesByDepartment(@RequestParam int departmentId) {
+        List<Employee> employees = departmentService.findAllEmployeesByDepartment(departmentId);
+        if (employees.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(employees, HttpStatus.OK);
+    }
+
+    @GetMapping("/all-grouped")
+    public ResponseEntity<Map<Integer, List<Employee>>> getAllEmployeesGroupedByDepartment() {
+        Map<Integer, List<Employee>> employeesGrouped = departmentService.findAllEmployeesGroupedByDepartments();
+        return new ResponseEntity<>(employeesGrouped, HttpStatus.OK);
     }
 }

@@ -2,12 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Employee;
 import com.example.demo.service.EmployeeService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/employees")
@@ -20,15 +19,18 @@ public class EmployeeController {
     }
 
     @GetMapping("/all")
-    public Set<Employee> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        List<Employee> employees = employeeService.findAll();
+        return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
-    @GetMapping("/add")
-    public Employee addEmployee(@RequestParam String firstName,
-                                @RequestParam String lastName,
-                                @RequestParam int salary,
-                                @RequestParam int department) {
-        return employeeService.addEmployee(firstName, lastName, salary, department);
+    @PostMapping("/add")
+    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
+        return new ResponseEntity<>(employee, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/delete/{name}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable String name) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
